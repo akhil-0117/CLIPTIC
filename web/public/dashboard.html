@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard — CLIPTIC</title>
+<link rel="icon" type="image/png" href="/logo.png"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="/css/styles.css"/>
+<style>
+  .shell { display: flex; min-height: 100vh; }
+
+  #sidebar {
+    width: 232px; position: fixed; inset: 0 auto 0 0; z-index: 50;
+    background: rgba(11, 11, 14, 0.9); border-right: 1px solid var(--line);
+    backdrop-filter: blur(22px) saturate(120%);
+    display: flex; flex-direction: column;
+  }
+  .side-brand { display: flex; align-items: center; gap: 10px; padding: 20px 16px 16px; border-bottom: 1px solid var(--line); }
+  .side-brand img { width: 30px; height: 30px; border-radius: 9px; border: 1px solid rgba(139,92,246,.4); }
+  .side-brand b { font-size: 14.5px; letter-spacing: -0.03em; display: block; }
+  .side-brand small { font-size: 8.5px; letter-spacing: .16em; color: var(--dim); text-transform: uppercase; font-weight: 650; }
+
+  .side-nav { padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; flex: 1; overflow-y: auto; }
+  .side-nav button {
+    position: relative; display: flex; align-items: center; gap: 11px; width: 100%;
+    min-height: 36px; padding: 8px 11px; border-radius: 9px; border: 1px solid transparent;
+    background: transparent; color: #8e8e97; font-size: 12.5px; font-weight: 600;
+    cursor: pointer; text-align: left; transition: all .18s var(--ease);
+  }
+  .side-nav button:hover { background: rgba(255,255,255,.045); color: #e7e7ea; transform: translateX(2px); }
+  .side-nav button.active { color: #f1eff8; background: rgba(139,92,246,.12); border-color: rgba(139,92,246,.18); }
+  .side-nav button.active::before {
+    content: ""; position: absolute; left: -9px; top: 9px; width: 2px; height: 18px;
+    border-radius: 99px; background: #9b78ff; box-shadow: 0 0 12px rgba(139,92,246,.55);
+  }
+  .side-nav button i { width: 15px; font-size: 11.5px; opacity: .85; }
+  .nav-count { margin-left: auto; background: rgba(139,92,246,.18); color: #bfaaff; font-size: 9.5px; padding: 1.5px 7px; border-radius: 99px; font-weight: 700; }
+
+  .side-foot { padding: 12px; border-top: 1px solid var(--line); }
+  .user-chip { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 11px; background: rgba(255,255,255,.03); border: 1px solid var(--line); margin-bottom: 8px; }
+  .user-chip img { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(145deg,#7c55e8,#4c3399); display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:750;color:#fff; object-fit: cover; }
+  .user-chip .who { flex: 1; min-width: 0; }
+  .user-chip .who b { display: block; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-chip .who span { font-size: 10px; color: var(--dim); }
+  .side-actions { display: flex; gap: 7px; }
+  .side-actions .btn { flex: 1; padding: 7px 8px; font-size: 11px; }
+
+  #main { flex: 1; margin-left: 232px; padding: 26px 34px 70px; max-width: 1180px; }
+  .page { display: none; }
+  .page.active { display: block; animation: pageIn .3s var(--ease) both; }
+  @keyframes pageIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+  .page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; margin-bottom: 22px; flex-wrap: wrap; }
+  .page-head h1 { font-size: 24px; font-weight: 750; letter-spacing: -0.035em; }
+  .page-head .sub { color: var(--muted); font-size: 12.5px; margin-top: 5px; }
+  .balance-pill { display: flex; align-items: center; gap: 9px; padding: 9px 16px; border-radius: 12px; background: rgba(69,212,131,.08); border: 1px solid rgba(69,212,131,.25); font-size: 13px; font-weight: 700; color: var(--green); }
+
+  .hero-card {
+    position: relative; overflow: hidden; padding: 26px 28px; margin-bottom: 20px;
+    background:
+      radial-gradient(60% 100% at 90% 0%, rgba(139,92,246,.2), transparent 65%),
+      linear-gradient(140deg, rgba(255,255,255,.055), rgba(255,255,255,.018));
+    border: 1px solid var(--line-strong); border-radius: 16px;
+  }
+  .hero-card::after { content: "CLIPTIC"; position: absolute; right: 18px; bottom: -22px; font-size: 76px; font-weight: 850; letter-spacing: -.07em; color: rgba(255,255,255,.022); pointer-events: none; }
+  .hero-card h2 { font-size: 21px; letter-spacing: -0.03em; font-weight: 720; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .hero-card p { color: var(--muted); font-size: 13px; margin-top: 7px; max-width: 560px; line-height: 1.55; }
+  .hero-actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 1000px) { .grid-3 { grid-template-columns: 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+
+  /* Campaign cards */
+  .camp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+  .camp-card { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+  .camp-cover { height: 116px; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--line);
+    background-color: #13101c;
+    background-image: radial-gradient(60% 90% at 30% 20%, rgba(139,92,246,.32), transparent 70%), linear-gradient(150deg,#17131f,#0d0b13);
+  }
+  .camp-cover img.logo { width: 40px; height: 40px; border-radius: 12px; border: 1px solid rgba(139,92,246,.4); }
+  .camp-body { padding: 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .camp-body h3 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; }
+  .camp-body .desc { font-size: 12.5px; color: var(--muted); line-height: 1.55; flex: 1; }
+  .camp-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .camp-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--line); }
+
+  /* Connect platform cards */
+  .platform-card { display: flex; flex-direction: column; gap: 14px; }
+  .platform-head { display: flex; align-items: center; gap: 12px; }
+  .platform-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 19px; background: rgba(255,255,255,.05); border: 1px solid var(--line); }
+  .platform-icon.tiktok { color: #fff; background: rgba(255,0,80,.12); border-color: rgba(255,0,80,.3); }
+  .platform-icon.instagram { color: #ff7ab8; background: rgba(224,82,99,.1); border-color: rgba(224,82,99,.3); }
+  .platform-icon.youtube { color: #ff5f5f; background: rgba(255,0,0,.1); border-color: rgba(255,80,80,.3); }
+  .platform-head b { font-size: 14px; display: block; }
+  .platform-head span { font-size: 11.5px; color: var(--muted); }
+  .platform-stats { display: flex; gap: 18px; padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .platform-stats div { flex: 1; }
+  .platform-stats .v { font-size: 17px; font-weight: 720; letter-spacing: -0.02em; }
+  .platform-stats .k { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-top: 3px; }
+
+  /* Notifications */
+  .notif { display: flex; gap: 13px; padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,.025); border: 1px solid var(--line); margin-bottom: 8px; align-items: flex-start; }
+  .notif.unread { background: rgba(139,92,246,.07); border-color: rgba(139,92,246,.2); }
+  .notif .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--purple); margin-top: 6px; flex-shrink: 0; box-shadow: 0 0 8px rgba(139,92,246,.7); }
+  .notif .dot.read { background: var(--dim); box-shadow: none; }
+  .notif .msg { font-size: 13px; line-height: 1.5; }
+  .notif .when { font-size: 10.5px; color: var(--dim); margin-top: 4px; }
+
+  /* Modal extras */
+  .detail-sec { margin-bottom: 16px; }
+  .detail-sec .h { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+  .detail-sec p { font-size: 13px; line-height: 1.6; color: rgba(255,255,255,.8); white-space: pre-wrap; }
+  .ref-links a { display: block; font-size: 12.5px; color: var(--blue); padding: 7px 0; border-bottom: 1px dashed var(--line); word-break: break-all; }
+  .ref-links a:hover { text-decoration: underline; }
+
+  .mobile-top { display: none; }
+  @media (max-width: 860px) {
+    #sidebar { transform: translateX(-100%); transition: transform .3s var(--ease); }
+    #sidebar.open { transform: none; }
+    #main { margin-left: 0; padding: 16px 14px 60px; }
+    .mobile-top { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .mobile-top button { background: rgba(255,255,255,.05); border: 1px solid var(--line); color: #fff; width: 38px; height: 38px; border-radius: 10px; cursor: pointer; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside id="sidebar">
+    <div>
+      <div class="side-brand">
+        <img src="/logo.png" alt=""/>
+        <div><b>CLIPTIC</b><small>Creator Network</small></div>
+      </div>
+      <nav class="side-nav" id="nav">
+        <button data-page="overview" class="active"><i class="fa-solid fa-gauge-high"></i> Overview</button>
+        <button data-page="campaigns"><i class="fa-solid fa-bullhorn"></i> Campaigns</button>
+        <button data-page="posts"><i class="fa-solid fa-film"></i> My posts <span class="nav-count" id="count-posts" style="display:none">0</span></button>
+        <button data-page="connect"><i class="fa-solid fa-link"></i> Connect accounts</button>
+        <button data-page="earnings"><i class="fa-solid fa-coins"></i> Earnings</button>
+        <button data-page="payouts"><i class="fa-solid fa-wallet"></i> Payouts</button>
+        <button data-page="notifications"><i class="fa-solid fa-bell"></i> Notifications <span class="nav-count" id="count-notif" style="display:none">0</span></button>
+        <button data-page="leaderboard"><i class="fa-solid fa-trophy"></i> Leaderboard</button>
+      </nav>
+    </div>
+    <div class="side-foot">
+      <div class="user-chip">
+        <img id="me-avatar" src="/logo.png" alt=""/>
+        <div class="who"><b id="me-name">…</b><span id="me-role">Clipper</span></div>
+      </div>
+      <div class="side-actions">
+        <a class="btn" id="btn-admin" href="/admin" style="display:none"><i class="fa-solid fa-shield-halved"></i> Admin</a>
+        <button class="btn ghost" onclick="signOut()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button>
+      </div>
+    </div>
+  </aside>
+
+  <main id="main">
+    <div class="mobile-top">
+      <button onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
+      <b>CLIPTIC</b>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section class="page active" id="page-overview">
+      <div class="page-head">
+        <div><h1>Overview</h1><div class="sub">Your clipper workspace at a glance</div></div>
+        <div class="balance-pill"><i class="fa-solid fa-wallet"></i> <span id="ov-balance">$0.00</span></div>
+      </div>
+
+      <div class="hero-card">
+        <h2>Hey, <span id="ov-name">Clipper</span> <span id="ov-verified"></span></h2>
+        <p id="ov-tagline">Connect your accounts and join a campaign to start earning per view.</p>
+        <div class="hero-actions">
+          <button class="btn primary" onclick="go('campaigns')"><i class="fa-solid fa-bullhorn"></i> Browse campaigns</button>
+          <button class="btn" onclick="go('connect')"><i class="fa-solid fa-link"></i> Connect account</button>
+          <button class="btn" onclick="go('payouts')"><i class="fa-solid fa-arrow-up-from-bracket"></i> Withdraw</button>
+        </div>
+      </div>
+
+      <div class="stat-grid" id="ov-stats"></div>
+    </section>
+
+    <!-- CAMPAIGNS -->
+    <section class="page" id="page-campaigns">
+      <div class="page-head">
+        <div><h1>Campaigns</h1><div class="sub">Live brand campaigns accepting clips right now</div></div>
+        <input class="input" id="camp-search" style="max-width:260px" placeholder="Search campaigns…" oninput="renderCampaigns()"/>
+      </div>
+      <div class="camp-grid" id="camp-grid"><div class="empty">Loading campaigns…</div></div>
+    </section>
+
+    <!-- MY POSTS -->
+    <section class="page" id="page-posts">
+      <div class="page-head">
+        <div><h1>My posts</h1><div class="sub">Every clip you've submitted — status, views and earnings</div></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Campaign</th><th>Platform</th><th>Link</th><th>Views</th><th>Status</th><th>Earnings</th><th>Submitted</th></tr></thead>
+          <tbody id="posts-tbody"><tr><td colspan="7" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CONNECT -->
+    <section class="page" id="page-connect">
+      <div class="page-head">
+        <div><h1>Connect accounts</h1><div class="sub">Verify ownership with a bio code — stats sync automatically</div></div>
+      </div>
+      <div class="grid-3" id="platforms-grid"></div>
+      <div class="card" style="margin-top:16px" id="verify-help">
+        <div class="card-title"><i class="fa-solid fa-circle-info" style="color:var(--blue)"></i> How verification works</div>
+        <p class="card-sub" style="line-height:1.65">
+          Enter your username above and we generate a one-time code. Paste that code into your bio,
+          save, then hit <b>Check bio</b>. We confirm it live, pull your follower count and average
+          views from the platform, and — once you meet the requirements
+          (<span id="vh-req">—</span>) — your profile is verified automatically.
+        </p>
+      </div>
+    </section>
+
+    <!-- EARNINGS -->
+    <section class="page" id="page-earnings">
+      <div class="page-head">
+        <div><h1>Earnings</h1><div class="sub">Balance and every credit that landed in your account</div></div>
+        <div class="balance-pill"><i class="fa-solid fa-wallet"></i> <span id="er-balance">$0.00</span></div>
+      </div>
+      <div class="stat-grid" style="margin-bottom:18px" id="er-stats"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Amount</th><th>Source</th><th>Date</th></tr></thead>
+          <tbody id="er-tbody"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PAYOUTS -->
+    <section class="page" id="page-payouts">
+      <div class="page-head">
+        <div><h1>Payouts</h1><div class="sub">Withdraw your balance to USDT, BTC or LTC</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Request withdrawal</div>
+          <div class="card-sub" style="margin-bottom:16px">Minimum payout <span id="po-min" class="mono">$10.00</span> · available <b id="po-bal" class="mono">$0.00</b></div>
+          <form onsubmit="return requestPayout(event)">
+            <div class="field"><label class="label">Amount (USD)</label><input type="number" id="po-amount" step="0.01" min="1" placeholder="25.00" required/></div>
+            <div class="field"><label class="label">Method</label>
+              <select id="po-method">
+                <option value="USDT">USDT (TRC-20)</option>
+                <option value="BTC">BTC</option>
+                <option value="LTC">LTC</option>
+                <option value="ETH">ETH</option>
+              </select>
+            </div>
+            <div class="field"><label class="label">Wallet address</label><input type="text" id="po-wallet" placeholder="Your wallet address"/></div>
+            <button class="btn primary block" type="submit"><i class="fa-solid fa-arrow-up-from-bracket"></i> Request withdrawal</button>
+          </form>
+        </div>
+        <div class="card">
+          <div class="card-title">Withdrawal history</div>
+          <div class="card-sub" style="margin-bottom:14px">Status updates appear as admins process requests</div>
+          <div id="po-history"><div class="empty">Loading…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOTIFICATIONS -->
+    <section class="page" id="page-notifications">
+      <div class="page-head">
+        <div><h1>Notifications</h1><div class="sub">Verification, campaign and payout updates</div></div>
+        <button class="btn sm" onclick="markRead()"><i class="fa-solid fa-check-double"></i> Mark all read</button>
+      </div>
+      <div id="notif-list"><div class="empty">Loading…</div></div>
+    </section>
+
+    <!-- LEADERBOARD -->
+    <section class="page" id="page-leaderboard">
+      <div class="page-head">
+        <div><h1>Leaderboard</h1><div class="sub">Top earners across clips and campaigns</div></div>
+      </div>
+      <div id="lb-list"><div class="empty">Loading…</div></div>
+    </section>
+  </main>
+</div>
+
+<!-- Campaign detail modal -->
+<div class="modal-overlay" id="camp-modal" onclick="if(event.target===this)closeCampaign()">
+  <div class="modal">
+    <button class="close-x" onclick="closeCampaign()">✕</button>
+    <div id="camp-modal-body"></div>
+  </div>
+</div>
+
+<script src="/js/common.js"></script>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

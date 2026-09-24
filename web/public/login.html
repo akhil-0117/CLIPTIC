@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sign In — CLIPTIC</title>
+<link rel="icon" type="image/png" href="/logo.png"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="/css/styles.css"/>
+<style>
+  .auth-wrap { min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; }
+
+  .pitch {
+    position: relative; display: flex; flex-direction: column; justify-content: center;
+    padding: 60px 64px; overflow: hidden;
+    background:
+      radial-gradient(70% 60% at 15% 15%, rgba(139, 92, 246, 0.22), transparent 70%),
+      radial-gradient(55% 55% at 85% 85%, rgba(110, 168, 255, 0.12), transparent 70%),
+      linear-gradient(160deg, #12101a, #0a0a0e);
+    border-right: 1px solid var(--line);
+  }
+  .pitch::after {
+    content: ""; position: absolute; inset: 0; opacity: 0.14; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,.14) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(70% 70% at 50% 50%, black, transparent);
+  }
+  .pitch .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 44px; position: relative; z-index: 1; }
+  .pitch .brand img { width: 40px; height: 40px; border-radius: 12px; border: 1px solid rgba(139,92,246,.4); }
+  .pitch .brand b { font-size: 17px; letter-spacing: -0.03em; }
+  .pitch h1 { font-size: clamp(30px, 3.4vw, 44px); line-height: 1.06; letter-spacing: -0.04em; font-weight: 780; position: relative; z-index: 1; }
+  .pitch h1 em { font-style: normal; color: #a78bfa; }
+  .pitch ul { list-style: none; margin-top: 34px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 1; }
+  .pitch li { display: flex; gap: 12px; align-items: flex-start; font-size: 13.5px; color: rgba(255,255,255,.72); line-height: 1.5; }
+  .pitch li i { color: var(--green); margin-top: 2px; }
+  .pitch .quote { position: relative; z-index: 1; margin-top: 46px; padding: 18px 20px; border-radius: 14px; background: rgba(255,255,255,.045); border: 1px solid var(--line); font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .pitch .quote b { color: #fff; }
+
+  .form-side { display: flex; align-items: center; justify-content: center; padding: 40px 26px; }
+  .auth-card { width: min(400px, 100%); }
+  .auth-card h2 { font-size: 25px; letter-spacing: -0.035em; font-weight: 750; }
+  .auth-card .sub { color: var(--muted); font-size: 13.5px; margin-top: 8px; margin-bottom: 26px; line-height: 1.55; }
+
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 12px; padding: 4px; margin-bottom: 24px; }
+  .tabs button { padding: 9px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 650; cursor: pointer; transition: all .2s var(--ease); }
+  .tabs button.active { background: rgba(139,92,246,.16); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.08); border: 1px solid rgba(139,92,246,.25); }
+
+  .oauth-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 11px;
+    padding: 12.5px; border-radius: 11px; font-size: 13.5px; font-weight: 650;
+    border: 1px solid var(--line-strong); background: rgba(255,255,255,.05); color: #fff;
+    cursor: pointer; transition: all .2s var(--ease); margin-bottom: 11px;
+  }
+  .oauth-btn:hover { background: rgba(255,255,255,.09); transform: translateY(-1px); }
+  .oauth-btn.discord { background: rgba(88,101,242,.16); border-color: rgba(88,101,242,.4); }
+  .oauth-btn.discord:hover { background: rgba(88,101,242,.26); }
+  .oauth-btn.google { background: rgba(255,255,255,.06); }
+  .oauth-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+  .oauth-btn i { font-size: 16px; }
+  .oauth-btn .na { font-size: 10.5px; color: var(--dim); font-weight: 550; margin-left: auto; }
+
+  .alt-link { text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 18px; }
+  .alt-link a, .linklike { color: #a78bfa; cursor: pointer; font-weight: 600; }
+  .alt-link a:hover, .linklike:hover { text-decoration: underline; }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn .25s var(--ease); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .form-error {
+    display: none; margin-bottom: 16px; padding: 11px 14px; border-radius: 10px;
+    background: rgba(255,100,124,.09); border: 1px solid rgba(255,100,124,.3);
+    color: #ffb9c6; font-size: 12.5px; line-height: 1.5;
+  }
+  .form-error.show { display: block; }
+
+  .admin-note {
+    font-size: 11.5px; color: var(--dim); line-height: 1.55; padding: 12px 14px;
+    background: rgba(255,255,255,.03); border: 1px dashed var(--line-strong); border-radius: 10px; margin-bottom: 18px;
+  }
+
+  @media (max-width: 900px) {
+    .auth-wrap { grid-template-columns: 1fr; }
+    .pitch { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="auth-wrap">
+  <!-- Brand pitch -->
+  <aside class="pitch">
+    <div class="brand"><img src="/logo.png" alt=""/><b>CLIPTIC NETWORK</b></div>
+    <h1>Welcome back to the <em>clipper network.</em></h1>
+    <ul>
+      <li><i class="fa-solid fa-circle-check"></i> Discover live brand campaigns and submit clips from the dashboard</li>
+      <li><i class="fa-solid fa-circle-check"></i> Connect TikTok, Instagram &amp; YouTube with automatic bio verification</li>
+      <li><i class="fa-solid fa-circle-check"></i> Live follower &amp; view stats, transparent earnings ledger</li>
+      <li><i class="fa-solid fa-circle-check"></i> One account for the website <b>and</b> the Discord server</li>
+    </ul>
+    <div class="quote"><b>“Post clips, get verified automatically, withdraw weekly.”</b><br/>Sign in with Discord or Google — it takes one click.</div>
+  </aside>
+
+  <!-- Auth form -->
+  <main class="form-side">
+    <div class="auth-card">
+      <div class="tabs">
+        <button id="tab-clipper" class="active" onclick="switchMode('clipper')">Clipper</button>
+        <button id="tab-admin" onclick="switchMode('admin')">Admin</button>
+      </div>
+
+      <!-- CLIPPER -->
+      <div class="panel active" id="panel-clipper">
+        <h2 id="clipper-title">Sign in to CLIPTIC</h2>
+        <p class="sub" id="clipper-sub">Content creators sign in with Discord or Google.</p>
+
+        <div class="form-error" id="clipper-error"></div>
+
+        <button class="oauth-btn discord" id="btn-discord" onclick="oauth('discord')">
+          <i class="fa-brands fa-discord"></i> Continue with Discord
+        </button>
+        <button class="oauth-btn google" id="btn-google" onclick="oauth('google')">
+          <i class="fa-brands fa-google"></i> Continue with Google
+        </button>
+
+        <div class="divider">or with email</div>
+
+        <form id="clipper-form" onsubmit="return clipperSubmit(event)">
+          <div class="field" id="clipper-name-field" style="display:none">
+            <label class="label">Display name</label>
+            <input type="text" id="c-name" placeholder="Your name" autocomplete="name"/>
+          </div>
+          <div class="field">
+            <label class="label">Email</label>
+            <input type="email" id="c-email" placeholder="you@example.com" autocomplete="email" required/>
+          </div>
+          <div class="field">
+            <label class="label">Password</label>
+            <input type="password" id="c-password" placeholder="••••••••" autocomplete="current-password" required/>
+          </div>
+          <button class="btn primary block" type="submit" id="clipper-submit">Sign in</button>
+        </form>
+
+        <p class="alt-link" id="clipper-toggle"></p>
+      </div>
+
+      <!-- ADMIN -->
+      <div class="panel" id="panel-admin">
+        <h2>Admin console</h2>
+        <p class="sub">Team members sign in with their own admin credentials — separate from clipper accounts.</p>
+
+        <div class="admin-note" id="admin-note" style="display:none"></div>
+        <div class="form-error" id="admin-error"></div>
+
+        <form id="admin-form" onsubmit="return adminSubmit(event)">
+          <div class="field">
+            <label class="label">Admin email</label>
+            <input type="email" id="a-email" placeholder="admin@example.com" autocomplete="email" required/>
+          </div>
+          <div class="field">
+            <label class="label">Password</label>
+            <input type="password" id="a-password" placeholder="••••••••" autocomplete="current-password" required/>
+          </div>
+          <button class="btn primary block" type="submit" id="admin-submit">Sign in to console</button>
+        </form>
+
+        <div id="admin-register" style="display:none">
+          <div class="divider">or register a new admin</div>
+          <form onsubmit="return adminRegister(event)">
+            <div class="field">
+              <label class="label">Name</label>
+              <input type="text" id="r-name" placeholder="Admin name" required/>
+            </div>
+            <div class="field">
+              <label class="label">Email</label>
+              <input type="email" id="r-email" placeholder="admin@example.com" required/>
+            </div>
+            <div class="field">
+              <label class="label">Password (min 8 chars)</label>
+              <input type="password" id="r-password" autocomplete="new-password" required minlength="8"/>
+            </div>
+            <div class="field" id="r-code-field">
+              <label class="label">Invite code</label>
+              <input type="text" id="r-code" placeholder="Provided by the team"/>
+            </div>
+            <button class="btn block" type="submit">Register as admin</button>
+          </form>
+        </div>
+        <p class="alt-link"><span class="linklike" onclick="switchMode('clipper')">← Back to clipper sign in</span></p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/common.js"></script>
+<script src="/js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+node_modules/
+dist/
+
+# secrets — never commit
+.env
+.env.*
+
+# SQLite database (local data)
+*.db
+*.db-shm
+*.db-wal
+
+# accidental npm install artifacts
+12.0.2
+cliptic-bot@1.0.0
+/node
+/ts-node
+
+# logs / os
+*.log
+.DS_Store

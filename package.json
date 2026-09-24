@@ -1,0 +1,36 @@
+{
+  "name": "cliptic-bot",
+  "version": "1.0.0",
+  "description": "CLIPTIC Discord Bot - A custom bot for a Discord clipping server",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "deploy-commands": "ts-node src/deploy-commands.ts",
+    "admin": "ts-node src/admin/server.ts",
+    "reset-db": "node -e \"const {resetDatabase}=require('./dist/database');resetDatabase();console.log('Database reset.');\"",
+    "preview": "tsc && node dist/admin/server.js",
+    "postinstall": "npx puppeteer browsers install chrome && mkdir -p /root/.cache/puppeteer && ln -sf /home/daytona/.cache/puppeteer/chrome /root/.cache/puppeteer/chrome"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
+    "better-auth": "^1.7.5",
+    "better-sqlite3": "^9.4.3",
+    "cors": "^2.8.6",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "express": "^5.2.1",
+    "puppeteer": "^25.10.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.2"
+  }
+}
